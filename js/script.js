@@ -1,0 +1,489 @@
+// RightClick Function
+const contextMenu = document.getElementById("contextMenu");
+const cardBody = document.getElementById("tableBody");
+document.addEventListener("click", function () {
+  contextMenu.style.display = "none";
+});
+cardBody.addEventListener("contextmenu", function (event) {
+  event.preventDefault();
+  contextMenu.style.display = "block";
+  contextMenu.style.left = `${event.pageX}px`;
+  contextMenu.style.top = `${event.pageY}px`;
+});
+contextMenu.addEventListener("click", function (event) {
+  event.stopPropagation();
+});
+document.addEventListener("contextmenu", function (event) {
+  if (!cardBody.contains(event.target)) {
+    contextMenu.style.display = "none";
+    return;
+  }
+});
+
+// Function to refresh table
+ReLoad = () => {
+  let tableBody = document.getElementById("tableBody");
+  let currentContent = tableBody.innerHTML;
+  tableBody.innerHTML = "";
+  setTimeout(() => {
+    tableBody.innerHTML = currentContent;
+  }, 100);
+};
+
+// subMenu function
+function SubFunction(action) {
+  const MenuBtn = document.getElementById("sub");
+  const Submenu = document.getElementById("sub-menu");
+
+  if (action === "show") {
+    Submenu.style.display = "block";
+    MenuBtn.style.color = "white";
+    MenuBtn.style.backgroundColor = "#007bb6";
+  } else if (action === "hide") {
+    Submenu.style.display = "none";
+    MenuBtn.style.color = "white";
+    MenuBtn.style.backgroundColor = "transparent";
+  } else if (action === "checkHide") {
+    setTimeout(() => {
+      if (!Submenu.matches(":hover") && !MenuBtn.matches(":hover")) {
+        SubFunction("hide");
+      }
+    }, 200);
+  }
+}
+
+// scan js
+// scan start
+document
+  .getElementById("startScanButton")
+  .addEventListener("click", function () {
+    var startButton = this;
+    var stopButton = document.getElementById("stopScanButton");
+    var scanStatus = document.getElementById("scanStatus");
+    startButton.disabled = true; // Disable start button during execution
+    startButton.innerHTML = "Executing 1%...";
+    var progress = 1; // Start progress at 1%
+
+    var interval = setInterval(function () {
+      if (progress <= 100) {
+        startButton.innerHTML = `Executing ${progress}%...`;
+        progress++;
+      } else {
+        clearInterval(interval);
+        startButton.innerHTML = "Start Scan Again";
+        startButton.disabled = false; // Re-enable start button
+        scanStatus.textContent = "Previous Scan completed";
+        setTimeout(function () {
+          scanStatus.textContent = ""; // Clear status text after a delay
+        }, 8000); // Adjust delay in milliseconds (e.g., 6000ms = 6 seconds)
+      }
+    }, 5000); // 12 seconds interval for each 1% increment
+
+    var stopScan = function () {
+      clearInterval(interval); // Stop the progress interval
+      startButton.innerHTML = '<i class="fa-solid fa-play"></i> Start Scan';
+      startButton.disabled = false; // Re-enable start button
+      scanStatus.textContent = "Scan stopped";
+      setTimeout(function () {
+        scanStatus.textContent = ""; // Clear status text after a delay
+      }, 2000);
+    };
+
+    stopButton.addEventListener("click", stopScan);
+
+    var xhr = new XMLHttpRequest();
+    var currentTime = new Date();
+    var formattedTime =
+      ("0" + (currentTime.getMonth() + 1)).slice(-2) +
+      "/" +
+      ("0" + currentTime.getDate()).slice(-2) +
+      "/" +
+      currentTime.getFullYear() +
+      " " +
+      ("0" + currentTime.getHours()).slice(-2) +
+      ":" +
+      ("0" + currentTime.getMinutes()).slice(-2) +
+      ":" +
+      ("0" + currentTime.getSeconds()).slice(-2);
+
+    var user = "abraam"; // Replace "abraam" with the desired user value
+    xhr.onreadystatechange = function () {
+      if (xhr.readyState === XMLHttpRequest.DONE) {
+        if (xhr.status === 200) {
+          // Handle successful response from server
+          scanStatus.innerHTML = xhr.responseText;
+        } else {
+          // Handle error
+          scanStatus.innerHTML = "Error: " + xhr.statusText;
+        }
+        startButton.disabled = false; // Re-enable start button
+        startButton.innerHTML = '<i class="fa-solid fa-play"></i> Start Scan'; // Reset button text
+      }
+    };
+    xhr.open(
+      "GET",
+      "../functionScan/assetscanscan.php?time=" +
+        encodeURIComponent(formattedTime) +
+        "&user=" +
+        encodeURIComponent(user),
+      true
+    ); // Replace 'scan.php' with the URL of your PHP script
+    xhr.send();
+  });
+
+// online js
+function updateConnectionStatus() {
+  const statusDiv = document.getElementById("connection-status");
+  const statusText = statusDiv.querySelector("p");
+
+  if (navigator.onLine) {
+    statusText.textContent = "Online";
+    statusDiv.style.boxShadow = "0px 0px 10px 0px #28a745 inset";
+  } else {
+    statusText.textContent = "Offline";
+    statusDiv.style.boxShadow = "0px 0px 10px 0px #ff6f69 inset";
+  }
+}
+
+// Check connection status when the page loads
+updateConnectionStatus();
+
+// Listen for online and offline events
+window.addEventListener("online", updateConnectionStatus);
+window.addEventListener("offline", updateConnectionStatus);
+
+// old js starts here
+("use strict");
+$(document).ready(function () {
+  var $window = $(window);
+  var getBody = $("body");
+  var bodyClass = getBody[0].className;
+  $(".main-menu").attr("id", bodyClass);
+  $(".card-header-right .close-card").on("click", function () {
+    var $this = $(this);
+    $this.parents(".card").animate({
+      opacity: "0",
+      "-webkit-transform": "scale3d(.3, .3, .3)",
+      transform: "scale3d(.3, .3, .3)",
+    });
+    setTimeout(function () {
+      $this.parents(".card").remove();
+    }, 800);
+  });
+  $(".card-header-right .minimize-card").on("click", function () {
+    var $this = $(this);
+    var port = $($this.parents(".card"));
+    var card = $(port).children(".card-block").slideToggle();
+    $(this).toggleClass("icon-minus").fadeIn("slow");
+    $(this).toggleClass("icon-plus").fadeIn("slow");
+  });
+  $(".card-header-right .full-card").on("click", function () {
+    var $this = $(this);
+    var port = $($this.parents(".card"));
+    port.toggleClass("full-card");
+    $(this).toggleClass("icon-maximize");
+    $(this).toggleClass("icon-minimize");
+  });
+  $("#more-details").on("click", function () {
+    $(".more-details").slideToggle(500);
+  });
+  $(".mobile-options").on("click", function () {
+    $(".navbar-container .nav-right").slideToggle("slow");
+  });
+  $.mCustomScrollbar.defaults.axis = "yx";
+  $("#styleSelector .style-cont").slimScroll({
+    setTop: "10px",
+    height: "calc(100vh - 440px)",
+  });
+  $(".main-menu").mCustomScrollbar({
+    setTop: "10px",
+    setHeight: "calc(100% - 80px)",
+  });
+  var a = $(window).height() - 80;
+  $(".main-friend-list").slimScroll({
+    height: a,
+    allowPageScroll: false,
+    wheelStep: 5,
+    color: "#1b8bf9",
+  });
+  $("#search-friends").on("keyup", function () {
+    var g = $(this).val().toLowerCase();
+    $(".userlist-box .media-body .chat-header").each(function () {
+      var s = $(this).text().toLowerCase();
+      $(this).closest(".userlist-box")[s.indexOf(g) !== -1 ? "show" : "hide"]();
+    });
+  });
+  $(".displayChatbox").on("click", function () {
+    var my_val = $(".pcoded").attr("vertical-placement");
+    if (my_val == "right") {
+      var options = { direction: "left" };
+    } else {
+      var options = { direction: "right" };
+    }
+    $(".showChat").toggle("slide", options, 500);
+  });
+  $(".userlist-box").on("click", function () {
+    var my_val = $(".pcoded").attr("vertical-placement");
+    if (my_val == "right") {
+      var options = { direction: "left" };
+    } else {
+      var options = { direction: "right" };
+    }
+    $(".showChat_inner").toggle("slide", options, 500);
+  });
+  $(".back_chatBox").on("click", function () {
+    var my_val = $(".pcoded").attr("vertical-placement");
+    if (my_val == "right") {
+      var options = { direction: "left" };
+    } else {
+      var options = { direction: "right" };
+    }
+    $(".showChat_inner").toggle("slide", options, 500);
+    $(".showChat").css("display", "block");
+  });
+  $(".search-btn").on("click", function () {
+    $(".main-search").addClass("open");
+    $(".main-search .form-control").animate({ width: "200px" });
+  });
+  $(".search-close").on("click", function () {
+    $(".main-search .form-control").animate({ width: "0" });
+    setTimeout(function () {
+      $(".main-search").removeClass("open");
+    }, 300);
+  });
+  $("#mobile-collapse i").addClass("icon-toggle-right");
+
+  $("#mobile-collapse").on("click", function () {
+    const Submenu = document.getElementById("sub-menu");
+    const MenuBtn = document.querySelector(".pcoded-navigatio-lavel1"); // Assuming this is your menu button
+
+    // Toggle the icon classes
+    $("#mobile-collapse i").toggleClass("icon-toggle-right");
+    $("#mobile-collapse i").toggleClass("icon-toggle-left");
+
+    // If submenu is currently visible (display = block), hide it and apply styles to MenuBtn
+    if (Submenu.style.display === "block") {
+      Submenu.style.display = "none"; // Hide submenu
+
+      // Apply style changes to the menu button when the submenu is hidden
+      MenuBtn.setAttribute(
+        "style",
+        "color: #999999 !important; background-color: none !important;"
+      );
+    }
+  });
+});
+$(document).ready(function () {
+  $(function () {
+    $('[data-toggle="tooltip"]').tooltip();
+  });
+  $(".theme-loader").fadeOut("slow", function () {
+    $(this).remove();
+  });
+});
+function toggleFullScreen() {
+  var a = $(window).height() - 10;
+  if (
+    !document.fullscreenElement &&
+    !document.mozFullScreenElement &&
+    !document.webkitFullscreenElement
+  ) {
+    if (document.documentElement.requestFullscreen) {
+      document.documentElement.requestFullscreen();
+    } else if (document.documentElement.mozRequestFullScreen) {
+      document.documentElement.mozRequestFullScreen();
+    } else if (document.documentElement.webkitRequestFullscreen) {
+      document.documentElement.webkitRequestFullscreen(
+        Element.ALLOW_KEYBOARD_INPUT
+      );
+    }
+  } else {
+    if (document.cancelFullScreen) {
+      document.cancelFullScreen();
+    } else if (document.mozCancelFullScreen) {
+      document.mozCancelFullScreen();
+    } else if (document.webkitCancelFullScreen) {
+      document.webkitCancelFullScreen();
+    }
+  }
+  $(".full-screen").toggleClass("icon-maximize");
+  $(".full-screen").toggleClass("icon-minimize");
+}
+$("#styleSelector").append(
+  "" +
+    '<div class="selector-toggle">' +
+    '<a href="javascript:void(0)"></a>' +
+    "</div>" +
+    "<ul>" +
+    "<li>" +
+    '<p class="selector-title main-title st-main-title"><b>Adminty </b>Customizer</p>' +
+    '<span class="text-muted">Live customizer with tons of options</span>' +
+    "</li>" +
+    "<li>" +
+    '<p class="selector-title">Main layouts</p>' +
+    "</li>" +
+    "<li>" +
+    '<div class="theme-color">' +
+    '<a href="#" class="navbar-theme" navbar-theme="themelight1"><span class="head"></span><span class="cont"></span></a>' +
+    '<a href="#" class="navbar-theme" navbar-theme="theme1"><span class="head"></span><span class="cont"></span></a>' +
+    "</div>" +
+    "</li>" +
+    "</ul>" +
+    '<div class="style-cont m-t-10">' +
+    '<ul class="nav nav-tabs  tabs" role="tablist">' +
+    '<li class="nav-item"><a class="nav-link active" data-toggle="tab" href="#sel-layout" role="tab">Layouts</a></li>' +
+    '<li class="nav-item"><a class="nav-link" data-toggle="tab" href="#sel-sidebar-setting" role="tab">Sidebar Settings</a></li>' +
+    "</ul>" +
+    '<div class="tab-content tabs">' +
+    '<div class="tab-pane active" id="sel-layout" role="tabpanel">' +
+    "<ul>" +
+    '<li class="theme-option">' +
+    '<div class="checkbox-fade fade-in-primary">' +
+    "<label>" +
+    '<input type="checkbox" value="false" id="sidebar-position" name="sidebar-position" checked>' +
+    '<span class="cr"><i class="cr-icon feather icon-check txt-success f-w-600"></i></span>' +
+    "<span>Fixed Sidebar Position</span>" +
+    "</label>" +
+    "</div>" +
+    "</li>" +
+    '<li class="theme-option">' +
+    '<div class="checkbox-fade fade-in-primary">' +
+    "<label>" +
+    '<input type="checkbox" value="false" id="header-position" name="header-position" checked>' +
+    '<span class="cr"><i class="cr-icon feather icon-check txt-success f-w-600"></i></span>' +
+    "<span>Fixed Header Position</span>" +
+    "</label>" +
+    "</div>" +
+    "</li>" +
+    "</ul>" +
+    "</div>" +
+    '<div class="tab-pane" id="sel-sidebar-setting" role="tabpanel">' +
+    "<ul>" +
+    '<li class="theme-option">' +
+    '<p class="sub-title drp-title">Menu Type</p>' +
+    '<div class="form-radio" id="menu-effect">' +
+    '<div class="radio radio-inverse radio-inline" data-toggle="tooltip" title="simple icon">' +
+    "<label>" +
+    '<input type="radio" name="radio" value="st6" onclick="handlemenutype(this.value)" checked="true">' +
+    '<i class="helper"></i><span class="micon st6"><i class="feather icon-command"></i></span>' +
+    "</label>" +
+    "</div>" +
+    '<div class="radio  radio-primary radio-inline" data-toggle="tooltip" title="color icon">' +
+    "<label>" +
+    '<input type="radio" name="radio" value="st5" onclick="handlemenutype(this.value)">' +
+    '<i class="helper"></i><span class="micon st5"><i class="feather icon-command"></i></span>' +
+    "</label>" +
+    "</div>" +
+    "</div>" +
+    "</li>" +
+    '<li class="theme-option">' +
+    '<p class="sub-title drp-title">SideBar Effect</p>' +
+    '<select id="vertical-menu-effect" class="form-control minimal">' +
+    '<option name="vertical-menu-effect" value="shrink">shrink</option>' +
+    '<option name="vertical-menu-effect" value="overlay">overlay</option>' +
+    '<option name="vertical-menu-effect" value="push">Push</option>' +
+    "</select>" +
+    "</li>" +
+    '<li class="theme-option">' +
+    '<p class="sub-title drp-title">Hide/Show Border</p>' +
+    '<select id="vertical-border-style" class="form-control minimal">' +
+    '<option name="vertical-border-style" value="solid">Style 1</option>' +
+    '<option name="vertical-border-style" value="dotted">Style 2</option>' +
+    '<option name="vertical-border-style" value="dashed">Style 3</option>' +
+    '<option name="vertical-border-style" value="none">No Border</option>' +
+    "</select>" +
+    "</li>" +
+    '<li class="theme-option">' +
+    '<p class="sub-title drp-title">Drop-Down Icon</p>' +
+    '<select id="vertical-dropdown-icon" class="form-control minimal">' +
+    '<option name="vertical-dropdown-icon" value="style1">Style 1</option>' +
+    '<option name="vertical-dropdown-icon" value="style2">style 2</option>' +
+    '<option name="vertical-dropdown-icon" value="style3">style 3</option>' +
+    "</select>" +
+    "</li>" +
+    '<li class="theme-option">' +
+    '<p class="sub-title drp-title">Sub Menu Drop-down Icon</p>' +
+    '<select id="vertical-subitem-icon" class="form-control minimal">' +
+    '<option name="vertical-subitem-icon" value="style1">Style 1</option>' +
+    '<option name="vertical-subitem-icon" value="style2">style 2</option>' +
+    '<option name="vertical-subitem-icon" value="style3">style 3</option>' +
+    '<option name="vertical-subitem-icon" value="style4">style 4</option>' +
+    '<option name="vertical-subitem-icon" value="style5">style 5</option>' +
+    '<option name="vertical-subitem-icon" value="style6">style 6</option>' +
+    "</select>" +
+    "</li>" +
+    "</ul>" +
+    "</div>" +
+    "<ul>" +
+    "<li>" +
+    '<p class="selector-title">Header Brand color</p>' +
+    "</li>" +
+    '<li class="theme-option">' +
+    '<div class="theme-color">' +
+    '<a href="#" class="logo-theme" logo-theme="theme1"><span class="head"></span><span class="cont"></span></a>' +
+    '<a href="#" class="logo-theme" logo-theme="theme2"><span class="head"></span><span class="cont"></span></a>' +
+    '<a href="#" class="logo-theme" logo-theme="theme3"><span class="head"></span><span class="cont"></span></a>' +
+    '<a href="#" class="logo-theme" logo-theme="theme4"><span class="head"></span><span class="cont"></span></a>' +
+    '<a href="#" class="logo-theme" logo-theme="theme5"><span class="head"></span><span class="cont"></span></a>' +
+    "</div>" +
+    "</li>" +
+    "<li>" +
+    '<p class="selector-title">Header color</p>' +
+    "</li>" +
+    '<li class="theme-option">' +
+    '<div class="theme-color">' +
+    '<a href="#" class="header-theme" header-theme="theme1"><span class="head"></span><span class="cont"></span></a>' +
+    '<a href="#" class="header-theme" header-theme="theme2"><span class="head"></span><span class="cont"></span></a>' +
+    '<a href="#" class="header-theme" header-theme="theme3"><span class="head"></span><span class="cont"></span></a>' +
+    '<a href="#" class="header-theme" header-theme="theme4"><span class="head"></span><span class="cont"></span></a>' +
+    '<a href="#" class="header-theme" header-theme="theme5"><span class="head"></span><span class="cont"></span></a>' +
+    '<a href="#" class="header-theme" header-theme="theme6"><span class="head"></span><span class="cont"></span></a>' +
+    "</div>" +
+    "</li>" +
+    "<li>" +
+    '<p class="selector-title">Active link color</p>' +
+    "</li>" +
+    '<li class="theme-option">' +
+    '<div class="theme-color">' +
+    '<a href="#" class="active-item-theme small" active-item-theme="theme1">&nbsp;</a>' +
+    '<a href="#" class="active-item-theme small" active-item-theme="theme2">&nbsp;</a>' +
+    '<a href="#" class="active-item-theme small" active-item-theme="theme3">&nbsp;</a>' +
+    '<a href="#" class="active-item-theme small" active-item-theme="theme4">&nbsp;</a>' +
+    '<a href="#" class="active-item-theme small" active-item-theme="theme5">&nbsp;</a>' +
+    '<a href="#" class="active-item-theme small" active-item-theme="theme6">&nbsp;</a>' +
+    '<a href="#" class="active-item-theme small" active-item-theme="theme7">&nbsp;</a>' +
+    '<a href="#" class="active-item-theme small" active-item-theme="theme8">&nbsp;</a>' +
+    '<a href="#" class="active-item-theme small" active-item-theme="theme9">&nbsp;</a>' +
+    '<a href="#" class="active-item-theme small" active-item-theme="theme10">&nbsp;</a>' +
+    '<a href="#" class="active-item-theme small" active-item-theme="theme11">&nbsp;</a>' +
+    '<a href="#" class="active-item-theme small" active-item-theme="theme12">&nbsp;</a>' +
+    "</div>" +
+    "</li>" +
+    "<li>" +
+    '<p class="selector-title">Menu Caption Color</p>' +
+    "</li>" +
+    '<li class="theme-option">' +
+    '<div class="theme-color">' +
+    '<a href="#" class="leftheader-theme small" lheader-theme="theme1">&nbsp;</a>' +
+    '<a href="#" class="leftheader-theme small" lheader-theme="theme2">&nbsp;</a>' +
+    '<a href="#" class="leftheader-theme small" lheader-theme="theme3">&nbsp;</a>' +
+    '<a href="#" class="leftheader-theme small" lheader-theme="theme4">&nbsp;</a>' +
+    '<a href="#" class="leftheader-theme small" lheader-theme="theme5">&nbsp;</a>' +
+    '<a href="#" class="leftheader-theme small" lheader-theme="theme6">&nbsp;</a>' +
+    "</div>" +
+    "</li>" +
+    "</ul>" +
+    "</div>" +
+    "</div>" +
+    "<ul>" +
+    "<li>" +
+    '<a href="http://html.codedthemes.com/Adminty/doc" target="_blank" class="btn btn-primary btn-block m-r-15 m-t-5 m-b-10">Online Documentation</a>' +
+    "</li>" +
+    '<li class="text-center">' +
+    '<span class="text-center f-18 m-t-15 m-b-15 d-block">Thank you for sharing !</span>' +
+    '<a href="#!" target="_blank" class="btn btn-facebook soc-icon m-b-20"><i class="feather icon-facebook"></i></a>' +
+    '<a href="#!" target="_blank" class="btn btn-twitter soc-icon m-l-20 m-b-20"><i class="feather icon-twitter"></i></a>' +
+    "</li>" +
+    "</ul>" +
+    ""
+);
